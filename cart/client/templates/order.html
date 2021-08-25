@@ -1,0 +1,199 @@
+<!-- order.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- 使用link元素導入樣式文件 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/js/common.js"></script>
+</head>
+<body>
+</body>
+
+<script>
+    var html_body = '';
+    token = window.localStorage.getItem('cart_token');
+    username = window.localStorage.getItem('cart_user');
+    $(document).ready(function(){
+        var href = window.location.href;
+        var order_num = href.split("/")[href.split("/").length - 1]
+        $.ajax({
+            // 請求方式
+            type:"get",
+            // url
+            url:"http://127.0.0.1:8000/v1/orders/" + order_num,
+            beforeSend: function(request){
+                request.setRequestHeader("Authorization", token);
+            },
+            success:function(result){
+                if (200 == result.code){
+                    username = window.localStorage.getItem('cart_user');
+                    header_html = makeHeader(username);
+                    footer_html = makeFooter();
+                    var orders = result.data.orders;
+                    var create_time = orders[0].create_time;
+                    var o_status = orders[0].o_status;
+                    html_body += header_html;
+                    if(orders.length == 0){
+                        html_body += "使用者不存在"
+                    }else{
+                        // console.log(orders);
+                        // console.log(create_time);
+                        html_body += '<div id="order_box">';
+                        html_body += '<div class="title">';
+                        html_body += '<div>訂單明細</div>';
+                        html_body += '</div>';
+                        html_body += '<div class="project">';
+                        html_body += '<div>商品名稱</div>';
+                        html_body += '<div>單價</div>';
+                        html_body += '<div>數量</div>';
+                        html_body += '<div>小計</div>';
+                        html_body += '</div>';
+                        html_body += '<div class="commoditys">';
+                        for(var o in orders){
+                            var c_name = orders[o].c_name;
+                            var c_price = orders[o].c_price;
+                            var o_num = orders[o].o_num;
+                            var total = orders[o].total;
+                            html_body += '<div class="commodity">';
+                            html_body += '<div>' + c_name + '</div>';
+                            html_body += '<div>$' + c_price + '</div>';
+                            html_body += '<div>' + o_num + '</div>';
+                            html_body += '<div class="sum">$' + total + '</div>';
+                            html_body += '</div>';
+                        }
+                        html_body += '</div>';
+                        html_body += '<div class="total">';
+                        html_body += '<div>';
+                        html_body += '<div class="sum_total"></div>';
+                        html_body += '<div>商品小計</div>';
+                        html_body += '</div>';
+                        html_body += '<div>';
+                        html_body += '<div class="shipping_price">$150</div>';
+                        html_body += '<div>運費</div>';
+                        html_body += '</div>';
+                        html_body += '<div>';
+                        html_body += '<div class="total_money"></div>';
+                        html_body += '<div>訂單金額</div>';
+                        html_body += '</div>';
+                        html_body += '<div>';
+                        html_body += '<div>信用卡支付</div>';
+                        html_body += '<div>付款方式</div>';
+                        html_body += '</div>';
+                        html_body += '<div>';
+                        html_body += '<div>' + create_time + '</div>';
+                        html_body += '<div>訂單日期</div>';
+                        html_body += '</div>';
+                        html_body += '<div>';
+                        if(o_status == 1){
+                            html_body += '<a class="btn_checkout" href="javascript:;">付款</a>';
+                            html_body += '<a class="btn_cancel" href="javascript:;">取消訂單</a>';
+                        };
+                        html_body += '<a href="/user_order">返回訂單列表</a>';
+                        html_body += '</div>';
+                        html_body += '</div>';
+                        html_body += '</div>';
+                        html_body += footer_html;
+                        $('body').html(html_body);
+                        CalculateSumPrice();
+                        CalculateTotal();
+                        checkout_cancel_button();
+                        loginOut();
+                    }
+                }else{
+                    alert(result.error);
+                }
+            }
+        })
+    });
+
+</script>
+
+<script>
+    function CalculateSumPrice(){
+        // 小計總額
+        var money = 0;
+        $(".sum").each(function(){
+            money += parseInt($(this).text().substr(1))
+        })
+        $(".sum_total").text("$" + money)
+    };
+    CalculateSumPrice();
+    function CalculateTotal(){
+        // 訂單總額計算
+        var total = 0;
+        total = parseInt($(".sum_total").text().substr(1)) + parseInt($(".shipping_price").text().substr(1));
+        $(".total_money").text("$" + total);
+    };
+    CalculateTotal();
+
+    function checkout_cancel_button(){
+        // 取消訂單
+        $(".btn_cancel").click(function(){
+            var yes = confirm("確認取消訂單？")
+            if(yes){
+                var href = window.location.href;
+                var order_num = href.split("/")[href.split("/").length - 1]
+                $.ajax({
+                    // 請求方式
+                    type:"delete",
+                    // ContentType
+                    contentType:"application/json",
+                    // url
+                    url:"http://127.0.0.1:8000/v1/orders/" + order_num,
+                    beforeSend: function(request){
+                        request.setRequestHeader("Authorization", token);
+                    },
+                    success:function(result){
+                        if (200 == result.code){
+                            alert("取消成功")
+                            window.location =  '/user_order';
+                        }
+                    }
+                })
+            }else{
+                alert("確認取消")
+            }
+        });
+        $(".btn_checkout").click(function(){
+            var yes = confirm("確認訂單")
+            if(yes){
+                var total = $(".total_money").text().substr(1);
+                var href = window.location.href;
+                var order_num = href.split("/")[href.split("/").length - 1]
+                var post_data = {'total': total, 'order_num': order_num}
+                $.ajax({
+                    // Type
+                    type:"post",
+                    // ContenType
+                    ContenType:"application/json",
+                    // url
+                    url:"http://127.0.0.1:8000/v1/orders/total_check",
+                    // 把JS的對象或數組序列化一个json 字符串
+                    data:JSON.stringify(post_data),
+                    beforeSend: function(request){
+                        request.setRequestHeader("Authorization", token);
+                    },
+                    success:function(result){
+                        if (200 == result.code){
+                            var order_href = result.order_href;
+                            var order_id = result.order_id;
+                            console.log(order_id);
+                            window.localStorage.setItem('order_id', order_id)
+                            console.log(order_href);
+                            window.location = order_href;
+                        }
+                    }
+                })
+            }else{
+                alert("確認取消")
+            }
+        });
+    }
+
+</script>
+</html>

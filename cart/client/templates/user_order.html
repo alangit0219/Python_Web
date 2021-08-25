@@ -1,0 +1,213 @@
+<!-- user_order.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- 使用link元素導入樣式文件 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/js/common.js"></script>
+</head>
+<body>
+</body>
+<script>
+    var html_body = '';
+    token = window.localStorage.getItem('cart_token');
+    username = window.localStorage.getItem('cart_user');
+    $.ajax({
+        // 請求方式
+        type:"get",
+        // url
+        url:"http://127.0.0.1:8000/v1/orders",
+        beforeSend: function(request){
+            request.setRequestHeader("Authorization", token);
+        },
+        success:function(result){
+            if (200 == result.code){
+                username = window.localStorage.getItem('cart_user');
+                header_html = makeHeader(username);
+                footer_html = makeFooter();
+                var orders = result.data.orders;
+                html_body += header_html;
+                if(orders.length == 0){
+                    html_body += "使用者不存在"
+                }else{
+                    html_body += '<div id="user_box">';
+                    html_body += '<div class="user">';
+                    html_body += '<div class="bg" id="div1">個人資訊</div>';
+                    html_body += '<div class="focus" id="div2">訂單</div>';
+                    html_body += '</div>';
+                    html_body += '<div class="con">';
+                    html_body += '<div id="div1_1" class="hidd">';
+                    html_body += '<div>';
+                    html_body += '<div>使用者名稱</div>';
+                    html_body += '<div><input type="text" name="username" id="username" value=""></div>';
+                    html_body += '</div>';
+                    html_body += '<div id="clear"></div>';
+                    html_body += '<div>';
+                    html_body += '<div>信箱</div>';
+                    html_body += '<div><input type="email" name="email" id="mail" value=""></div>';
+                    html_body += '</div>';
+                    html_body += '<div id="clear"></div>';
+                    html_body += '<div>';
+                    html_body += '<div>電話號碼</div>';
+                    html_body += '<div><input type="tel" name="tel" id="phone" value=""></div>';
+                    html_body += '</div>';
+                    html_body += '<div id="clear"></div>';
+                    html_body += '<div>';
+                    html_body += '<div>地址</div>';
+                    html_body += '<div><input type="text" name="address" id="address" value=""></div>';
+                    html_body += '</div>';
+                    html_body += '<div id="clear"></div>';
+                    html_body += '<div>';
+                    html_body += '<div id="savefile"><a href="jacascript:;" class="btn_save">儲存</a></div>';
+                    html_body += '</div>';
+                    html_body += '</div>';
+                    html_body += '<div id="div2_1">';
+                    html_body += '<div>';
+                    html_body += '<div>訂單號碼</div>';
+                    html_body += '<div>訂單日期</div>';
+                    html_body += '<div>數量</div>';
+                    html_body += '<div>訂單狀態</div>';
+                    html_body += '</div>';
+                    for(var o in orders){
+                        var order_num = orders[o].order_num
+                        var create_time = orders[o].create_time
+                        var o_num = orders[o].o_num
+                        var o_status = orders[o].o_status
+                        html_body += '<div>';
+                        html_body += '<div id="order_num">' + order_num + '</div>';
+                        html_body += '<div id="create_time">' + create_time + '</div>';
+                        html_body += '<div>' + o_num + '</div>';
+                        if(o_status == 1){
+                            html_body += '<div>待付款</div>';
+                        }else if(o_status == 2){
+                            html_body += '<div>完成訂單</div>';
+                        }else{
+                            html_body += '<div>取消訂單</div>';
+                        }
+                        html_body += '<div>'
+                        html_body += '<a class="btn_check"'+` href=/order/${order_num}>`;
+                        html_body += '查閱</a></div>'
+                        html_body += '</div>';
+                    }
+                    html_body += '</div>';
+                    html_body += '</div>';
+                    html_body += '</div>';
+                    html_body += footer_html;
+                    $('body').html(html_body);
+                    UserOrder();
+                    loginOut();
+                }
+            }else if(401 == result.code){
+                // alert(result.error);
+                username = window.localStorage.getItem('cart_user');
+                header_html = makeHeader(username);
+                footer_html = makeFooter();
+                html_body += header_html;
+                html_body += '<div id="user_box">';
+                html_body += '<div class="user">';
+                html_body += '<div class="bg" id="div1">個人資訊</div>';
+                html_body += '<div class="focus" id="div2">訂單</div>';
+                html_body += '</div>';
+                html_body += '<div class="con">';
+                html_body += '<div id="div1_1" class="hidd">';
+                html_body += '<div>';
+                html_body += '<div>使用者名稱</div>';
+                html_body += '<div><input type="text" name="username" id="username" value=""></div>';
+                html_body += '</div>';
+                html_body += '<div id="clear"></div>';
+                html_body += '<div>';
+                html_body += '<div>信箱</div>';
+                html_body += '<div><input type="email" name="email" id="mail" value=""></div>';
+                html_body += '</div>';
+                html_body += '<div id="clear"></div>';
+                html_body += '<div>';
+                html_body += '<div>電話號碼</div>';
+                html_body += '<div><input type="tel" name="tel" id="phone" value=""></div>';
+                html_body += '</div>';
+                html_body += '<div id="clear"></div>';
+                html_body += '<div>';
+                html_body += '<div>地址</div>';
+                html_body += '<div><input type="text" name="address" id="address" value=""></div>';
+                html_body += '</div>';
+                html_body += '<div id="clear"></div>';
+                html_body += '<div>';
+                html_body += '<div id="savefile"><a href="jacascript:;" class="btn_save">儲存</a></div>';
+                html_body += '</div>';
+                html_body += '</div>';
+                html_body += '<div id="div2_1">';
+                html_body += '<div>';
+                html_body += '<div>訂單號碼</div>';
+                html_body += '<div>訂單日期</div>';
+                html_body += '<div>數量</div>';
+                html_body += '<div>訂單狀態</div>';
+                html_body += '</div>';
+                html_body += '</div>';
+                html_body += '</div>';
+                html_body += '</div>';
+                html_body += footer_html;
+                $('body').html(html_body);
+                UserOrder();
+                loginOut();
+                // window.location =  '/user/' + username;
+            }
+        }
+    })
+</script>
+
+<script>
+    function UserOrder(){
+        $("#div1").click(function(){
+            window.location =  '/user/' + username;
+            // 當點擊某個按鈕時，獲取焦點，顯示對應內容
+            $("#div1").removeClass().addClass('focus');
+            $("#div2").removeClass().addClass('bg');
+            // 內容元素顯示
+            $("#div1_1").removeClass().addClass('show');
+            $("#div2_1").removeClass().addClass('hidd');
+        });
+        $("#div2").click(function(){
+            // 當點擊某個按鈕時，獲取焦點，顯示對應內容
+            $("#div2").removeClass().addClass('focus');
+            $("#div1").removeClass().addClass('bg');
+            // 內容元素顯示
+            $("#div2_1").removeClass().addClass('show');
+            $("#div1_1").removeClass().addClass('hidd');
+        });
+        // $(".btn_check").click(function(){
+        //     token = window.localStorage.getItem('cart_token');
+        //     var user = $("#username").val();
+        //     var email = $("#mail").val();
+        //     var phone = $("#phone").val();
+        //     var address = $("#address").val();
+        //     var post_data = {'username': user, 'email': email, 'phone': phone, 'address': address}
+        //     $.ajax({
+        //         //type
+        //         type:"post",
+        //         // contentType
+        //         contentType:"application/json",
+        //         // dataType
+        //         dataType:"json",
+        //         //url
+        //         url:"http://127.0.0.1:8000/v1/orders/"+username,
+        //         // 把JS對象或數組序列化成一個json 字符串
+        //         data:JSON.stringify(post_data),
+        //         beforeSend: function(request) {
+        //             request.setRequestHeader("Authorization", token);
+        //         },
+        //         success:function(result){
+        //             if (200 ==result.code){
+        //                 alert("更改成功");
+        //             }else{
+        //                 alert(result.error);
+        //             }
+        //         }
+        //     })
+        // })
+    };
+</script>
+</html>

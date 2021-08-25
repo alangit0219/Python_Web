@@ -1,0 +1,92 @@
+<!-- introduction.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- 使用link元素導入樣式文件 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/js/common.js"></script>
+</head>
+<body>
+    <!-- 設計頁面導航條元素 -->
+    <div id="nav">
+        <div class="box1">
+            <!-- 標題元素 -->
+            <div class="title">
+                <a href="/index"><h3>東園咖啡</h3></a>
+            </div>
+        </div>
+        <div class="box2">
+            <!-- 列表元素 -->
+            <div class="list">
+                <ul>
+                    <li><a href="/introduction">商店介紹</a></li>
+                    <li><a href="/products">所有商品</a></li>
+                    <li><a href="/shipping">運送政策</a></li>
+                    <li><a href="#" class="hidd" id="user">會員中心</a></li>
+                    <li><a href="/login" class="show" id="guest">會員登錄/註冊</a></li>
+                    <li><a href="/carts" id="cart">購物車</a></li>
+                    <li><a href="javascript:;" class="hidd" id="loginOut">登出</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="store">
+        <div class="box1">
+            <div class="title">
+                <h3>商店介紹</h3>
+            </div>
+        </div>
+        <div class="content">
+            <div class="img">
+                <img src="../static/img/story_img_1.jpeg" alt="">
+            </div>
+            <div class="cont1">
+                我們的工作，是沖煮出一杯杯讓人感到信任的好咖啡，
+                <br>
+                陪著你旅行，陪著你工作，陪著你 發光發熱。
+                <br>
+                文化，品味，職人，東園咖啡希望帶給人們的 是一種咖啡生活美學。
+            </div>
+        </div>
+    </div>
+
+    <div id="clear"></div>
+    <div style="height: 600px;">
+    </div>
+    <div id="footer">
+        <div>門市電話/(03)xxxx-xxxx</div>
+        <div>地址:桃園市中壢區九和二街xx號</div>
+        <div class="mail">
+            信箱:xiedong0219@gmail.com
+        </div>
+    </div>
+</body>
+
+<script>
+    token = window.localStorage.getItem('cart_token');
+    username = window.localStorage.getItem('cart_user');
+    $(window).load(function(){
+        // function user_check(){
+            if (username){
+                $("#user").removeClass().addClass('show');
+                $("#guest").removeClass().addClass('hidd');
+                $("#cart").removeClass().addClass('show');
+                $("#loginOut").removeClass().addClass('show');
+                $("#user").attr("href","/user/"+username);
+            }else{
+                $("#user").removeClass().addClass('hidd');
+                $("#guest").removeClass().addClass('show');
+                $("#cart").removeClass().addClass('hidd');
+                $("#loginOut").removeClass().addClass('hidd');
+            }
+        // };
+        loginOut();
+    });
+</script>
+</html>

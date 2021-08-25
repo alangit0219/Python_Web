@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- 使用link元素導入樣式文件 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/js/common.js"></script>
+</head>
+<body>
+</body>
+<script>
+    var html_body = '';
+    token = window.localStorage.getItem('cart_token');
+    username = window.localStorage.getItem('cart_user');
+    $.ajax({
+        //請求方式
+        type:"get",
+        //url
+        url:"http://127.0.0.1:8000/v1/commoditys",
+        success:function(result){
+            if (200 == result.code){
+                // console.log(result);
+                header_html = makeHeader(username);
+                footer_html = makeFooter();
+                html_body += header_html;
+                html_body += '<div id="product_box">';
+                html_body += '<!-- 商品導航欄位 -->';
+                html_body += '<div class="product_nav">';
+                html_body += '<div class="focus" id="div1">全部商品</div>';
+                html_body += '<div class="bg" id="div2">咖啡豆</div>';
+                html_body += '<div class="bg" id="div3">濾杯</div>';
+                html_body += '<div class="bg" id="div4">咖啡器具</div>';
+                html_body += '</div>';
+                var commoditys = result.data.commoditys;
+                var coffee = [];
+                for (var i in commoditys){
+                    var category = commoditys[i].category;
+                    if(category == 1){
+                        coffee.push(commoditys[i])
+                    }
+                }
+                console.log(coffee);
+                var cup = [];
+                for (var i in commoditys){
+                    var category = commoditys[i].category;
+                    if(category == 2){
+                        cup.push(commoditys[i])
+                    }
+                }
+                console.log(cup);
+                var machine = [];
+                for (var i in commoditys){
+                    var category = commoditys[i].category;
+                    if(category == 3){
+                        machine.push(commoditys[i])
+                    }
+                }
+                console.log(machine);
+                if(commoditys.length == 0){
+                    html_body += '網站維護中'
+                }else{
+                    console.log(commoditys);
+                    html_body += '<div class="con">';
+                    html_body += '<div id="div1_1">';
+                    for(var c in commoditys){
+                        var c_id = commoditys[c].commodity_id;
+                        var commodityname = commoditys[c].commodityname;
+                        var price = commoditys[c].price;
+                        var photo_url = commoditys[c].c_photo;
+                        var get_url = photo_url.split('/');
+                        for (var i in get_url){
+                            url_set = get_url[i]
+                        }
+                        var c_photo = 'http://127.0.0.1:8000/media/photo/'+ url_set;
+                        html_body += '<div>';
+                        html_body += '<a id="' + commodityname + `" href=/commodity/${c_id}>`;
+                        html_body += '<img src=' + c_photo + '>';
+                        html_body += '</a>';
+                        html_body += '<div>' + commodityname + '</div>';
+                        html_body += '<div>' + 'NT$' + price + '</div>';
+                        html_body += '</div>';
+                    }
+                    html_body += '</div>';
+                    html_body += '<div id="div2_1" class="hidd">';
+                    for(var c in coffee){
+                        var c_id = coffee[c].commodity_id;
+                        var commodityname = coffee[c].commodityname;
+                        var price = coffee[c].price;
+                        var photo_url = coffee[c].c_photo;
+                        var get_url = photo_url.split('/');
+                        for (var i in get_url){
+                            url_set = get_url[i]
+                        }
+                        var c_photo = 'http://127.0.0.1:8000/media/photo/'+ url_set;
+                        html_body += '<div>';
+                        html_body += '<a id="' + commodityname + `" href=/commodity/${c_id}>`;
+                        html_body += '<img src=' + c_photo + '>';
+                        html_body += '</a>';
+                        html_body += '<div>' + commodityname + '</div>';
+                        html_body += '<div>' + 'NT$' + price + '</div>';
+                        html_body += '</div>';
+                    }
+                    html_body += '</div>';
+                    html_body += '<div id="div3_1" class="hidd">';
+                    for(var c in cup){
+                        var c_id = cup[c].commodity_id;
+                        var commodityname = cup[c].commodityname;
+                        var price = cup[c].price;
+                        var photo_url = cup[c].c_photo;
+                        var get_url = photo_url.split('/');
+                        for (var i in get_url){
+                            url_set = get_url[i]
+                        }
+                        var c_photo = 'http://127.0.0.1:8000/media/photo/'+ url_set;
+                        html_body += '<div>';
+                        html_body += '<a id="' + commodityname + `" href=/commodity/${c_id}>`;
+                        html_body += '<img src=' + c_photo + '>';
+                        html_body += '</a>';
+                        html_body += '<div>' + commodityname + '</div>';
+                        html_body += '<div>' + 'NT$' + price + '</div>';
+                        html_body += '</div>';
+                    }
+                    html_body += '</div>';
+                    html_body += '<div id="div4_1" class="hidd">';
+                    for(var c in machine){
+                        var c_id = machine[c].commodity_id;
+                        var commodityname = machine[c].commodityname;
+                        var price = machine[c].price;
+                        var photo_url = machine[c].c_photo;
+                        var get_url = photo_url.split('/');
+                        for (var i in get_url){
+                            url_set = get_url[i]
+                        }
+                        var c_photo = 'http://127.0.0.1:8000/media/photo/'+ url_set;
+                        html_body += '<div>';
+                        html_body += '<a id="' + commodityname + `" href=/commodity/${c_id}>`;
+                        html_body += '<img src=' + c_photo + '>';
+                        html_body += '</a>';
+                        html_body += '<div>' + commodityname + '</div>';
+                        html_body += '<div>' + 'NT$' + price + '</div>';
+                        html_body += '</div>';
+                    }
+                    html_body += '</div>';
+                    html_body += '</div>';
+                    html_body += footer_html;
+                    $('body').html(html_body);
+                    console.log("into last part,bind div1 function");
+                    console.log($("#div1"));
+                    div_click();
+                    loginOut();
+                }
+            }else{
+                alert(result.error)
+            }
+        }
+    });
+</script>
+
+<script>
+    function div_click(){
+    $("#div1").click(function(){
+    //  當點擊某個按鈕時，獲取焦點，顯示對應內容
+        console.log("abc")
+        $("#div1").removeClass().addClass('focus');
+        $("#div2").removeClass().addClass('bg');
+        $("#div3").removeClass().addClass('bg');
+        $("#div4").removeClass().addClass('bg');
+        //內容元素顯示
+        $("#div1_1").removeClass().addClass('show');
+        $("#div2_1").removeClass().addClass('hidd');
+        $("#div3_1").removeClass().addClass('hidd');
+        $("#div4_1").removeClass().addClass('hidd');
+    });
+    console.log($("#div1").click);
+    $("#div2").click(function(){
+    //  當點擊某個按鈕時，獲取焦點，顯示對應內容
+        $("#div2").removeClass().addClass('focus');
+        $("#div1").removeClass().addClass('bg');
+        $("#div3").removeClass().addClass('bg');
+        $("#div4").removeClass().addClass('bg');
+        //內容元素顯示
+        $("#div2_1").removeClass().addClass('show');
+        $("#div1_1").removeClass().addClass('hidd');
+        $("#div3_1").removeClass().addClass('hidd');
+        $("#div4_1").removeClass().addClass('hidd');
+    });
+    console.log($("#div2").click);
+    $("#div3").click(function(){
+    //  當點擊某個按鈕時，獲取焦點，顯示對應內容
+        $("#div3").removeClass().addClass('focus');
+        $("#div1").removeClass().addClass('bg');
+        $("#div2").removeClass().addClass('bg');
+        $("#div4").removeClass().addClass('bg');
+        //內容元素顯示
+        $("#div3_1").removeClass().addClass('show');
+        $("#div1_1").removeClass().addClass('hidd');
+        $("#div2_1").removeClass().addClass('hidd');
+        $("#div4_1").removeClass().addClass('hidd');
+    });
+    console.log($("#div3").click);
+    $("#div4").click(function(){
+    //  當點擊某個按鈕時，獲取焦點，顯示對應內容
+        $("#div4").removeClass().addClass('focus');
+        $("#div1").removeClass().addClass('bg');
+        $("#div2").removeClass().addClass('bg');
+        $("#div3").removeClass().addClass('bg');
+        //內容元素顯示
+        $("#div4_1").removeClass().addClass('show');
+        $("#div1_1").removeClass().addClass('hidd');
+        $("#div2_1").removeClass().addClass('hidd');
+        $("#div3_1").removeClass().addClass('hidd');
+    });
+    console.log($("#div4").click);
+    };
+</script>
+
+</html>

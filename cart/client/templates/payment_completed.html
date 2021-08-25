@@ -1,0 +1,58 @@
+<!-- payment_completed.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- 使用link元素導入樣式文件 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/js/common.js"></script>
+</head>
+<body>
+</body>
+<script>
+    var html_body = '';
+    order_id = window.localStorage.getItem('order_id');
+    var href = window.location.href;
+    var token = (((href.split("/").reverse()[0]).split("?").reverse()[0]).split("=")[1]).split("&")[0];
+    var post_data = {'order_id': order_id, 'token': token}
+    $(document).ready(function(){
+        token = window.localStorage.getItem('cart_token');
+        username = window.localStorage.getItem('cart_user');
+        $.ajax({
+            // 請求方式
+            type:"post",
+            // ContentType
+            contentType:"application/json",
+            // url
+            url:"http://127.0.0.1:8000/v1/orders/capture_order_id",
+            // 把JS的對象或數組序列化一个json 字符串
+            data:JSON.stringify(post_data),
+            beforeSend: function(request){
+                request.setRequestHeader("Authorization", token);
+            },
+            success:function(result){
+                if (200 == result.code){
+                    header_html = makeHeader(username);
+                    footer_html = makeFooter();
+                    html_body += header_html;
+                    html_body += '<div id="payment">';
+                    html_body += '<div><img src="../static/img/payment_pic1.jpeg" alt=""></div>';
+                    html_body += '<div><a href="/user_order">返回訂單列表</a></div>';
+                    html_body += '</div>';
+                    html_body += '';
+                    html_body += footer_html;
+                    $('body').html(html_body);
+                    loginOut();
+                }else{
+                    alert(result.error);
+                }
+            }
+        });
+    });
+
+</script>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- 使用link元素導入樣式文件 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/js/common.js"></script>
+</head>
+<body>
+</body>
+
+<script>
+    var html_body = '';
+    token = window.localStorage.getItem('cart_token');
+    username = window.localStorage.getItem('cart_user');
+    $.ajax({
+        //請求方式
+        type:"get",
+        //url
+        url:"http://127.0.0.1:8000/v1/commoditys",
+        success:function(result){
+            if (200 == result.code){
+                header_html = makeHeader(username);
+                footer_html = makeFooter();
+                html_body += header_html;
+                html_body += '<div id="clear"></div>';
+                html_body += '<div id="content">';
+                html_body += '<div class="box3">';
+                var commoditys = result.data.commoditys;
+                var coffee = [];
+                // for (var i in commoditys){
+                //     var category = commoditys[i].category;
+                //     if(category == 1){
+                //         coffee.push(commoditys[i])
+                //     }
+                // }
+                for (var i=0 ; i < 6 ; i++){
+                    coffee.push(commoditys[i])
+                }
+                if(commoditys.length == 0){
+                    html_body += '網站維護中'
+                }else{
+                    html_body += '<div class="coffee">';
+                    for(var c in coffee){
+                        var c_id = coffee[c].commodity_id;
+                        var commodityname = coffee[c].commodityname;
+                        var price = coffee[c].price;
+                        var photo_url = coffee[c].c_photo;
+                        var get_url = photo_url.split('/');
+                        for (var i in get_url){
+                            url_set = get_url[i]
+                        }
+                        var c_photo = 'http://127.0.0.1:8000/media/photo/'+ url_set;
+                        html_body += '<div>';
+                        html_body += `<a href=/commodity/${c_id}>`;
+                        html_body += '<img src=' + c_photo + '>';;
+                        html_body += '</a>';
+                        html_body += '<div>' + commodityname + '</div>';
+                        html_body += '<div>' + 'NT$' + price + '</div>';
+                        html_body += '</div>';
+                        }
+                        html_body += '</div>';
+                        html_body += '</div>';
+                        html_body += footer_html;
+                        $('body').html(html_body);
+                        loginOut();
+                    }
+            }
+        }
+    })
+</script>
+
+</html>

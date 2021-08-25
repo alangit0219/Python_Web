@@ -1,0 +1,198 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- 使用link元素導入樣式文件 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/js/common.js"></script>
+</head>
+<body>
+    <!-- 設計頁面導航條元素 -->
+    <div id="nav">
+        <div class="box1">
+            <!-- 標題元素 -->
+            <div class="title">
+                <a href="/index"><h3>東園咖啡</h3></a>
+            </div>
+        </div>
+        <div class="box2">
+            <!-- 列表元素 -->
+            <div class="list">
+                <ul>
+                    <li><a href="/introduction">商店介紹</a></li>
+                    <li><a href="/products">所有商品</a></li>
+                    <li><a href="/shipping">運送政策</a></li>
+                    <li><a href="/login">會員登錄/註冊</a></li>
+                    <!-- <li><a href="/cart">購物車</a></li> -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="login_box">
+        <!-- 註冊&登入外框架 -->
+        <div class="login">
+            <!-- 註冊會員 -->
+            <div class="bg" id="div1">
+                註冊會員
+            </div>
+            <!-- 會員登入 -->
+            <div class="focus" id="div2">
+                會員登入
+            </div>
+        </div>
+        <div class="con">
+            <!-- 註冊內容 -->
+            <div id="div1_1" class="hidd">
+                <div><input type="email" class="email" name="mail" id="mail" placeholder="電子信箱"></div>
+                <span id="mailreg" class="hidd">信箱格式有誤</span>
+                <div><input type="text" class="username" name="username" placeholder="用戶名" pattern="[a-zA-Z0-9]{8,}"></div>
+                <span id="userreg" class="hidd">帳號格式有誤</span>
+                <div><input type="password" class="password" name="password" placeholder="密碼" pattern="[a-zA-Z0-9]{8,}"/></div>
+                <span id="passreg" class="hidd">密碼格式有誤</span>
+                <div><input type="button" value="立即註冊!" onclick="regist()"></div>
+            </div>
+            <!-- 登入內容 -->
+            <div id="div2_1">
+                <div><input type="text" class="username1" name="username" placeholder="用戶名" required/></div>
+                <div><input type="password" class="password1" name="password" id="password" placeholder="密碼" required/></div>
+                <div><input type="button" value="登入!" onclick="login()"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="clear"></div>
+    <div style="height: 500px;">
+    </div>
+    <div id="footer">
+        <div>門市電話/(03)xxxx-xxxx</div>
+        <div>地址:桃園市中壢區九和二街xx號</div>
+        <div class="mail">
+            信箱:xiedong0219@gmail.com
+        </div>
+    </div>
+</body>
+
+<script>
+
+    function login(){
+        var username = $('.username1').val()
+        var password = $('.password1').val()
+        var post_data = {'username':username, 'password':password }
+        $.ajax({
+            // 請求方式
+            type:"post",
+            // contentType
+            contentType:"application/json",
+            // dataType
+            dataType:"json",
+            // url
+            url:"http://127.0.0.1:8000/v1/tokens",
+            // 把JS的對象或數組序列化一个json 字符串
+            data:JSON.stringify(post_data),
+            // result 為請求的返回結果對象
+            success:function (result) {
+                if (200 == result.code){
+                    window.localStorage.setItem('cart_token', result.data.token)
+                    window.localStorage.setItem('cart_user', result.username)
+                    alert('登陸成功')
+                    refer_url = document.referrer
+                //如果是項目内部的請求，回跳到上一步
+                if (refer_url.search('127.0.0.1') != -1){
+                    window.location = refer_url;
+                }else{
+                    window.location =  '/index';
+                }
+            }else{
+                alert(result.error)
+            }
+            }
+        });
+    }
+
+    function regist(){
+        var username = $('.username').val()
+        var password = $('.password').val()
+        var email = $('.email').val()
+        var post_data = {'username':username, 'password':password, 'email':email}
+        var pass_pattern = /^([A-Za-z0-9]{8,16})$/;
+        var user_pattern = /^([a-zA-Z0-9]{8,16})$/;
+        var email_pattern = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+        var check = false;
+        if(email_pattern.test(email)){
+            $('#mailreg').removeClass().addClass('hidd');
+        }
+        if(user_pattern.test(username)){
+            $('#userreg').removeClass().addClass('hidd');
+        }
+        if(pass_pattern.test(password)){
+            $('#passreg').removeClass().addClass('hidd');
+        }
+        if(!email_pattern.test(email)){
+            $('#mailreg').removeClass().addClass('show');
+        }
+        if(!user_pattern.test(username)){
+            $('#userreg').removeClass().addClass('show');
+        }
+        if(!pass_pattern.test(password)){
+            $('#passreg').removeClass().addClass('show');
+        }
+        if((email_pattern.test(email)) && (user_pattern.test(username)) && (pass_pattern.test(password))){
+            check = true;
+        }
+        if(check){
+            $.ajax({
+                // 請求方式
+                type:"post",
+                // contentType
+                contentType:"application/json",
+                // dataType
+                dataType:"json",
+                // url
+                url:"http://127.0.0.1:8000/v1/users",
+                // 把JS的對象或數組序列化一个json 字符串
+                data:JSON.stringify(post_data),
+                // result 為請求的返回結果對象
+                success:function (result) {
+                    if (200 == result.code){
+                        window.localStorage.setItem('cart_token', result.data.token)
+                        window.localStorage.setItem('cart_user', result.username)
+                        alert('註冊成功')
+                        refer_url = document.referrer
+                        //如果是項目内部的請求，回跳到上一步
+                        if (refer_url.search('127.0.0.1') != -1){
+                            window.location = refer_url;
+                        }else{
+                            window.location =  '/index';
+                        }
+                    }else{
+                        alert(result.error)
+                    }
+                }
+            });
+
+        }
+    }
+    $("#div1").click(function(){
+        // 當點擊某個按鈕時，獲取焦點，顯示對應內容
+        $("#div1").removeClass().addClass('focus');
+        $("#div2").removeClass().addClass('bg');
+        // 內容元素顯示
+        $("#div1_1").removeClass().addClass('show');
+        $("#div2_1").removeClass().addClass('hidd');
+    });
+    $("#div2").click(function(){
+        // 當點擊某個按鈕時，獲取焦點，顯示對應內容
+        $("#div2").removeClass().addClass('focus');
+        $("#div1").removeClass().addClass('bg');
+        // 內容元素顯示
+        $("#div2_1").removeClass().addClass('show');
+        $("#div1_1").removeClass().addClass('hidd');
+    });
+</script>
+</html>

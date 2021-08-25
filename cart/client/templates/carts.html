@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <!-- 使用link元素導入樣式文件 -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/js/jquery.min.js" type="text/javascript"></script>
+    <script src="../static/js/common.js"></script>
+</head>
+<body>
+</body>
+<script>
+    var html_body = '';
+    token = window.localStorage.getItem('cart_token');
+    username = window.localStorage.getItem('cart_user');
+    $.ajax({
+        // 請求方式
+        type:"get",
+        // url
+        url:"http://127.0.0.1:8000/v1/shoppingcarts",
+        beforeSend: function(request){
+            request.setRequestHeader("Authorization", token);
+        },
+        success:function(result){
+            if (200 == result.code){
+                header_html = makeHeader(username);
+                footer_html = makeFooter();
+                html_body += header_html;
+                html_body += '<div id="cart_box">';
+                html_body += '<!-- 會員資料外框架 -->';
+                html_body += '<div class="cart">';
+                html_body += '<!-- 訂單 -->';
+                html_body += '<div><h3>購物車</h3></div>';
+                html_body += '</div>';
+                html_body += '<div class="cart-thead">';
+                html_body += '<div>商品名稱</div>';
+                html_body += '<div>商品單價</div>';
+                html_body += '<div>數量</div>';
+                html_body += '<div>小計</div>';
+                html_body += '</div>';
+                html_body += '<div class="cart-item-list">';
+                html_body += '<!-- 購物車詳細模組 -->';
+                var carts = result.data.carts
+                if(carts.length == 0){
+                    html_body += '網站維護中'
+                }else {
+                    var p_sum = 0;
+                    for(var c in carts){
+                        console.log(c)
+                        var commodity_id = carts[c].commodity_id;
+                        var c_name = carts[c].c_name;
+                        var c_price = carts[c].c_price;
+                        var num = carts[c].num;
+                        var sum = c_price * num;
+                        p_sum += sum;
+                        html_body += '<div class="cart-item">';
+                        html_body += '<div class="hidd">' + commodity_id + '</div>';
+                        html_body += '<div class="c_goods">' + c_name + '</div>';
+                        html_body += '<div class="c_price">' + c_price + '</div>';
+                        html_body += '<div class="c_num">';
+                        html_body += '<div class="quantity-form">';
+                        html_body += '<a href="javascript:;" class="decrement">-</a>';
+                        html_body += '<input type="text" class="itxt" value="' + num + '" onkeyup="value=value.replace(/^(0+)|[^\d]+/g,"")">';
+                        html_body += '<a href="javascript:;" class="increment">+</a>';
+                        html_body += '</div>';
+                        html_body += '</div>';
+                        html_body += '<div class="c_sum">$' + sum + '</div>';
+                        html_body += '<div class="c_action">';
+                        html_body += '<a href="javascript:;">刪除</a>';
+                        html_body += '</div>';
+                        html_body += '</div>';
+                    }
+                    html_body += '<div class="cart-floatbar">';
+                    html_body += '<div class="toolbar-right">';
+                    html_body += '<div class="price-sum">合計：$' + p_sum + '</div>';
+                    html_body += '<a href="javascript:;" class="btn_checkout">結帳</a>';
+                    html_body += '</div>';
+                    html_body += '</div>';
+                    html_body += '</div>';
+                    html_body += '</div>';
+                    html_body += footer_html;
+                    $('body').html(html_body);
+                    calculate();
+                    loginOut();
+                }
+            }else{
+                // alert(result.error);
+                header_html = makeHeader(username);
+                footer_html = makeFooter();
+                html_body += header_html;
+                html_body += '<div id="cart_box">';
+                html_body += '<!-- 會員資料外框架 -->';
+                html_body += '<div class="cart">';
+                html_body += '<!-- 訂單 -->';
+                html_body += '<div><h3>購物車</h3></div>';
+                html_body += '</div>';
+                html_body += '<div class="cart-thead">';
+                html_body += '<div>商品名稱</div>';
+                html_body += '<div>商品單價</div>';
+                html_body += '<div>數量</div>';
+                html_body += '<div>小計</div>';
+                html_body += '</div>';
+                html_body += '<div class="cart-item-list">';
+                html_body += '<!-- 購物車詳細模組 -->';
+                html_body += '<div style="height: 200px;"></div>';
+                html_body += footer_html;
+                $('body').html(html_body);
+                calculate();
+                loginOut();
+            }
+        }
+    });
+</script>
+<script>
+
+    function calculate(){
+        // 點選加號時
+        $(".increment").click(function(){
+            //獲得輸入框的數量
+            var num = $(this).siblings(".itxt").val();
+            //加一
+            num++;
+            var post_data = {'number': num}
+            var commodity_id = $(this).closest(".cart-item").children(".hidd").text();
+            $.ajax({
+                // 請求方式
+                type:"put",
+                // contentType
+                contentType:"application/json",
+                // dataType
+                dataType:"json",
+                // url
+                url:"http://127.0.0.1:8000/v1/shoppingcarts/"+commodity_id,
+                // 把JS對象或數組序列化成一個json 字符串
+                data:JSON.stringify(post_data),
+                beforeSend: function(request) {
+                    request.setRequestHeader("Authorization", token);
+                },
+                success:function(result){
+                    if (200 == result.code){
+                        // alert("修改成功");
+                    }else{
+                        alert(result.error);
+                        window.location =  '/carts';
+                    }
+                }
+            })
+            that = this;
+            //重新整理小計
+            flushSum(that,num);
+            //重新整理總價
+            flushSumPrice();
+        });
+
+        // 點選減號時
+        $(".decrement").click(function(){
+            //獲得輸入框的數量
+            var num = $(this).siblings(".itxt").val();
+            //如果數量大於一
+            if(num > 1){
+                //減一
+                num--;
+                var post_data = {'number': num};
+                var commodity_id = $(this).closest(".cart-item").children(".hidd").text();
+                $.ajax({
+                    // 請求方式
+                    type:"put",
+                    // contentType
+                    contentType:"application/json",
+                    // dataType
+                    dataType:"json",
+                    // url
+                    url:"http://127.0.0.1:8000/v1/shoppingcarts/"+commodity_id,
+                    // 把JS對象或數組序列化成一個json 字符串
+                    data:JSON.stringify(post_data),
+                    beforeSend: function(request) {
+                        request.setRequestHeader("Authorization", token);
+                    },
+                    success:function(result){
+                        if (200 == result.code){
+                            alert("修改成功");
+                        }else{
+                            alert(result.error);
+                            window.location =  '/carts';
+                        }
+                    }
+                });
+            }
+            that = this;
+            //重新整理小計
+            flushSum(that,num);
+            //重新整理總價
+            flushSumPrice();
+        });
+
+        // 監聽數量欄位
+        for (var i = 0; i < $(".itxt").length; i++){
+            $(".itxt")[i].addEventListener('change', listenfunction);
+        };
+        function listenfunction(){
+            var num = $(this).val();
+            if(num == ""){
+                alert("輸入有誤");
+                num = 1;
+                $(this).val(1);
+            }else{
+                var post_data = {'number': num};
+                var commodity_id = $(this).closest(".cart-item").children(".hidd").text();
+                $.ajax({
+                    // 請求方式
+                    type:"put",
+                    // contentType
+                    contentType:"application/json",
+                    // dataType
+                    dataType:"json",
+                    // url
+                    url:"http://127.0.0.1:8000/v1/shoppingcarts/"+commodity_id,
+                    // 把JS對象或數組序列化成一個json 字符串
+                    data:JSON.stringify(post_data),
+                    beforeSend: function(request) {
+                        request.setRequestHeader("Authorization", token);
+                    },
+                    success:function(result){
+                        if (200 == result.code){
+                            alert("修改成功");
+                        }else{
+                            alert(result.error);
+                            window.location =  '/carts';
+                        }
+                    }
+                });
+            }
+            that = this;
+            //重新計算小計
+            flushSum(that,num);
+            //重新整理總價
+            flushSumPrice();
+        };
+
+        // 當點選商品後面的刪除按鈕時
+        $(".c_action>a").click(function(){
+            var commodity_id = $(this).closest(".cart-item").children(".hidd").text();
+            $.ajax({
+                // 請求方式
+                type:"delete",
+                // contentType
+                contentType:"application/json",
+                // url
+                url:"http://127.0.0.1:8000/v1/shoppingcarts/"+commodity_id,
+                beforeSend: function(request) {
+                    request.setRequestHeader("Authorization", token);
+                },
+                success:function(result){
+                    if (200 == result.code){
+                        alert("刪除成功");
+                    }else{
+                        alert(result.error);
+                        window.location =  '/carts';
+                    }
+                }
+            });
+            //刪除當前商品
+            $(this).parents(".cart-item").remove();
+            //重新整理總價
+            flushSumPrice();
+        });
+
+        // 重新整理總計
+        function flushSumPrice(){
+            //總價錢
+            var money = 0;
+            //遍歷價錢
+            $(".c_sum").each(function(){
+                money += parseInt($(this).text().substr(1));
+                console.log(money)
+            })
+            //重新整理總價錢
+            $(".price-sum").text("合計：$" + money);
+        };
+
+        //重新整理小計
+        function flushSum(that,num){
+            //判斷庫存
+            if(num > 999){
+                alert("庫存不足");
+                num = 1;
+                $(that).val(1);
+            };
+            //重新整理商品數量
+            $(that).siblings(".itxt").val(num);
+            //獲得商品的價格
+            var price = $(that).parents(".c_num").siblings(".c_price").text();
+            //擷取字串並轉型
+            price = parseInt(price);
+            //獲得商品小計
+            sum = num * price;
+            //重新整理商品小計,商品小計保留兩位小數
+            $(that).parents(".c_num").siblings(".c_sum").text("$"+sum);
+        };
+
+        // 結帳功能請求
+        $(".btn_checkout").click(function(){
+            $.ajax({
+                // 請求方式
+                type:"post",
+                // contentType
+                contentType:"application/json",
+                // url
+                url:"http://127.0.0.1:8000/v1/orders",
+                beforeSend: function(request){
+                    request.setRequestHeader("Authorization", token);
+                },
+                success:function(result){
+                    if (200 == result.code){
+                        order_num = result.order_num
+                        // alert("進入付款頁面")
+                        window.location =  '/order/' + order_num;
+                    }else if(404 ==result.code){
+                        alert('請確認地址、電話填寫完整')
+                        window.location = '/user/' + username;
+                    }else{
+                        // alert(result.error);
+                        order_num = result.order_num
+                        window.location =  '/order/' + order_num;
+                    };
+                }
+            })
+        });
+
+    };
+
+</script>
+</html>
+
